@@ -1,12 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { Container, Cart } from './styles';
 import logo from '../../asssets/images/logo.svg';
 import { MdShoppingBasket } from 'react-icons/md';
 
-function Header({ cartSize }) {
+function Header() {
+
+    /** Assim conseguimos acessar o estado global de nossa aplicação com os Hooks */
+    const cartSize = useSelector(state => state.cart.length);
+
     return (
         <Container>
             <Link to="/">
@@ -23,6 +27,5 @@ function Header({ cartSize }) {
     );
 }
 
-export default connect(state => ({
-    cartSize: state.cart.length
-}))(Header);
+
+export default Header;
