@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdAddShoppingCart } from "react-icons/md";
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -11,55 +11,51 @@ import * as CartActions from '../../store/modules/cart/actions';
 
 
 
-class Home extends Component {
+function Home({ amount, addToCartRequest }) {
 
-  state = { products: [] };
+  const [products, setProducts] = useState([]);
 
-  async componentDidMount() {
+  useEffect(() => {
+    /**Jeito recomendado para se trabalhar com funções assincronas no useEffect */
+    async function loadProducts() {
+      const response = await api.get('products');
 
-    const response = await api.get('products');
+      const data = response.data.map(product => ({
+        ...product,
+        priceFormatted: formatPrice(product.price)
+      }));
 
-    const data = response.data.map(product => ({
-      ...product,
-      priceFormatted: formatPrice(product.price)
-    }));
+      setProducts(data);
+    }
 
-    this.setState({ products: data });
+    loadProducts();
+  }, []);
 
-  }
-
-  handleAddProduct = id => {
-
-    const { addToCartRequest } = this.props;
-
+  /** Como essa função só depende do parametro que está recebendo, não precisamos usar o useCallBack */
+  function handleAddProduct(id) {
     addToCartRequest(id);
   }
 
-  render() {
+  return (
+    <ProductList>
+      {products.map(product => (
+        <li key={product.id}>
+          <img src={product.image} alt="tenis" />
+          <strong>{product.title}</strong>
+          <span>{product.priceFormatted}</span>
 
-    const { products } = this.state;
-    const { amount } = this.props;
-    return (
-      <ProductList>
-        {products.map(product => (
-          <li key={product.id}>
-            <img src={product.image} alt="tenis" />
-            <strong>{product.title}</strong>
-            <span>{product.priceFormatted}</span>
+          <button type="button" onClick={() => handleAddProduct(product.id)}>
+            <div>
+              <MdAddShoppingCart />{' '}
+              {amount[product.id] || 0}
+            </div>
+            <span>Adicionar ao carrinho</span>
+          </button>
+        </li>
+      ))}
 
-            <button type="button" onClick={() => this.handleAddProduct(product.id)}>
-              <div>
-                <MdAddShoppingCart />{' '}
-                {amount[product.id] || 0}
-              </div>
-              <span>Adicionar ao carrinho</span>
-            </button>
-          </li>
-        ))}
-
-      </ProductList >
-    );
-  }
+    </ProductList >
+  );
 }
 
 
